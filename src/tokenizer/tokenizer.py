@@ -679,7 +679,7 @@ def parse_digits(w, convert_numbers):
     return TOK.Unknown(w), len(w)
 
 
-def gen_from_string(txt, replace_composite_glyphs=True):
+def gen_from_string(txt, replace_composite_glyphs=True, ispl=False):
     """ Generate rough tokens from a string """
     if replace_composite_glyphs:
         # Replace composite glyphs with single code points
@@ -690,7 +690,14 @@ def gen_from_string(txt, replace_composite_glyphs=True):
     # newlines separated only by whitespace), we interpret
     # them as hard sentence boundaries
     first = True
-    for span in re.split(r"\n\s*\n", txt):
+    split = []
+    if ispl:
+        split = re.split(r"\n", txt)
+    else:
+        split = re.split(r"\n\s*\n", txt)
+
+    for span in split:
+        print(span)
         if first:
             first = False
         else:
@@ -700,8 +707,7 @@ def gen_from_string(txt, replace_composite_glyphs=True):
         for w in span.split():
             yield w
 
-
-def gen(text_or_gen, replace_composite_glyphs=True):
+def gen(text_or_gen, replace_composite_glyphs=True, ispl=False):
     """ Generate rough tokens from a string or a generator """
     if text_or_gen is None:
         return
@@ -718,7 +724,7 @@ def gen(text_or_gen, replace_composite_glyphs=True):
             # Convert to a Unicode string (if Python 2.7)
             txt = make_str(txt)
             # Yield the contained rough tokens
-            for w in gen_from_string(txt, replace_composite_glyphs):
+            for w in gen_from_string(txt, replace_composite_glyphs, ispl):
                 yield w
 
 
@@ -747,6 +753,7 @@ def parse_tokens(txt, **options):
     # Obtain individual flags from the options dict
     convert_numbers = options.get("convert_numbers", False)
     replace_composite_glyphs = options.get("replace_composite_glyphs", True)
+    ispl = options.get("ispl", True)
 
     # The default behavior for kludgy ordinals is to pass them
     # through as word tokens
@@ -773,7 +780,7 @@ def parse_tokens(txt, **options):
     # 7) The process is repeated from step 4) until the current raw token is
     #    exhausted. At that point, we obtain the next token and start from 2).
 
-    for w in gen(txt, replace_composite_glyphs):
+    for w in gen(txt, replace_composite_glyphs, ispl):
 
         # Handle each sequence w of non-whitespace characters
 

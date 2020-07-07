@@ -78,19 +78,41 @@ parser.add_argument(
     help="UTF-8 output text file"
 )
 
-group = parser.add_mutually_exclusive_group()
-group.add_argument(
+# Defines input format
+ingroup = parser.add_mutually_exclusive_group()
+ingroup.add_argument(
+    "--ispl",
+    help="Input contains one sentence per line",
+    action="store_true"
+)
+ingroup.add_argument(
+    "--in_continuous",
+    help="Input contains continuous text",
+    action="store_true"
+)
+
+# Defines output format
+outgroup = parser.add_mutually_exclusive_group()
+outgroup.add_argument(
     "--csv",
     help="Output one token per line in CSV format", action="store_true"
 )
-group.add_argument(
+outgroup.add_argument(
     "--json",
     help="Output one token per line in JSON format", action="store_true"
 )
-group.add_argument(
+
+outgroup.add_argument(
+    "--ospl",
+    help="Output contains one sentence per line",
+    action="store_true"
+)
+
+outgroup.add_argument(
     "--normalize",
     help="Normalize punctuation", action="store_true"
 )
+
 
 
 def main():
@@ -148,11 +170,16 @@ def main():
     else:
         to_text = lambda t: t.txt
 
+    if args.ispl:
+        options["ispl"] = True
+    print("Options:{}".format(options))
+
     # Configure our JSON dump function
     json_dumps = partial(json.dumps, ensure_ascii=False, separators=(',', ':'))
     curr_sent = []
 
     for t in tokenize(gen(args.infile), **options):
+        #print(t)
         if args.csv:
             # Output the tokens in CSV format, one line per token
             if t.txt:
